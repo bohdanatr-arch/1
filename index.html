@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Socialvero — Instagram Followers</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            darkBg: '#090810',
+            cardBg: '#131122',
+            cardBorder: '#23203c',
+            inputBg: '#19172e',
+            accentPurple: '#8435f3',
+            accentPink: '#ea388c',
+            accentOrange: '#f97316',
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 3s infinite',
+            'shimmer': 'shimmer 2.5s infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+              '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+            },
+            shimmer: {
+              '100%': { transform: 'translateX(100%)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090810;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #23203c;
+      border-radius: 9999px;
+    }
+
+    /* Gradient buttons and borders matching the video */
+    .hero-gradient-btn {
+      background: linear-gradient(100deg, #9333ea 0%, #db2777 50%, #f97316 100%);
+      box-shadow: 0 4px 20px -2px rgba(219, 39, 119, 0.45);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hero-gradient-btn:hover {
+      box-shadow: 0 6px 28px 0px rgba(249, 115, 22, 0.6);
+      transform: translateY(-1px);
+    }
+    .hero-gradient-btn:active {
+      transform: scale(0.98);
+    }
+
+    .selected-amount-btn {
+      background: #241e45 !important;
+      border-color: #a855f7 !important;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+    }
+
+    /* Ambient background gradient glow */
+    .glow-sphere {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Progress bar smooth transition */
+    #progress-bar-fill {
+      transition: width 0.35s ease-out;
+    }
+
+    /* Toggle switch for simulated phone viewport */
+    .device-mockup {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 0 8px #1f1d32;
+    }
+  </style>
+</head>
+
+<body class="bg-darkBg text-slate-100 min-h-screen font-sans antialiased selection:bg-pink-500 selection:text-white flex flex-col items-center justify-start overflow-x-hidden relative">
+
+  <!-- Ambient Glow Effects -->
+  <div class="glow-sphere w-96 h-96 bg-purple-900/30 -top-20 -left-20"></div>
+  <div class="glow-sphere w-96 h-96 bg-pink-700/20 top-96 -right-20"></div>
+  <div class="glow-sphere w-80 h-80 bg-blue-900/20 bottom-10 left-1/3"></div>
+
+  <!-- Top Preview Bar (Control Bar) -->
+  <header class="w-full max-w-xl mx-auto px-4 py-3 flex items-center justify-between text-xs text-slate-400 border-b border-cardBorder/50 z-20">
+    <div class="flex items-center space-x-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <span class="text-emerald-400 font-medium">Server active • 98.9k online</span>
+    </div>
+    <div class="flex items-center space-x-3">
+      <button id="toggle-audio-btn" title="Sound effects" class="p-1.5 rounded-lg bg-cardBg border border-cardBorder hover:text-white transition">
+        <i id="audio-icon" class="fas fa-volume-up"></i>
+      </button>
+      <button id="toggle-device-view" title="Mobile mockup mode" class="p-1.5 rounded-lg bg-cardBg border border-cardBorder hover:text-white transition">
+        <i class="fas fa-mobile-screen"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- App Wrapper (can toggle phone frame style) -->
+  <div id="app-shell" class="w-full max-w-md mx-auto min-h-screen relative z-10 flex flex-col transition-all duration-300">
+    
+    <!-- Navigation (as seen in video) -->
+    <nav class="w-full px-5 py-4 flex items-center justify-between z-20">
+      <div class="flex items-center space-x-2.5 cursor-pointer" onclick="resetFlow()">
+        <!-- Socialvero Logo with Sparkles -->
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+          <i class="fa-solid fa-wand-magic-sparkles text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-xl tracking-tight text-white flex items-center">
+          Socialvero
+        </span>
+      </div>
+
+      <!-- Hamburger Menu Button -->
+      <button id="menu-btn" class="text-white p-2 rounded-lg hover:bg-cardBg transition focus:outline-none">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden absolute top-16 left-4 right-4 bg-cardBg border border-cardBorder p-4 rounded-2xl shadow-2xl z-50 backdrop-blur-xl">
+      <div class="space-y-3 font-medium text-sm">
+        <a href="#" class="block p-2 rounded-lg hover:bg-white/5 transition flex items-center justify-between">
+          <span><i class="fa-brands fa-instagram text-pink-500 mr-2"></i> Instagram Followers</span>
+          <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-mono">Active</span>
+        </a>
+        <a href="#" class="block p-2 rounded-lg hover:bg-white/5 transition flex items-center justify-between">
+          <span><i class="fa-brands fa-tiktok text-cyan-400 mr-2"></i> TikTok Likes & Views</span>
+          <span class="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full font-mono">Popular</span>
+        </a>
+        <a href="#" class="block p-2 rounded-lg hover:bg-white/5 transition flex items-center justify-between">
+          <span><i class="fa-brands fa-youtube text-red-500 mr-2"></i> YouTube Subscribers</span>
+          <span class="text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-mono">Fast</span>
+        </a>
+        <div class="border-t border-cardBorder pt-2 text-xs text-slate-400">
+          Need support? socialvero.support@gmail.com
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 px-5 pt-2 pb-16 flex flex-col">
+      
+      <!-- HERO HEADER -->
+      <section class="mb-6">
+        <h1 class="text-3xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+          Instagram Followers
+        </h1>
+      </section>
+
+      <!-- STEP CONTAINER CARD -->
+      <div class="bg-cardBg border border-cardBorder rounded-3xl p-5 shadow-2xl relative overflow-hidden backdrop-blur-md">
+        
+        <!-- Subtle Top Glow bar inside card -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500"></div>
+
+        <!-- ============================================== -->
+        <!-- STEP 1: Enter Username (Shown in Video 0:00) -->
+        <!-- ============================================== -->
+        <div id="step-1" class="step-panel transition-all duration-300">
+          <div class="mb-4">
+            <h2 class="text-lg font-bold text-white flex items-center">
+              Step 1 — Enter your Instagram username
+            </h2>
+          </div>
+
+          <!-- Input Group -->
+          <div class="mb-5">
+            <div class="relative flex items-center">
+              <span class="absolute left-3.5 text-slate-400 font-medium text-sm select-none">@</span>
+              <input 
+                id="input-username" 
+                type="text" 
+                placeholder="rabbit.60135146" 
+                value="rabbit.60135146"
+                class="w-full pl-8 pr-4 py-3 bg-inputBg border border-cardBorder rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition"
+              />
+            </div>
+            <p id="username-error" class="hidden text-xs text-rose-400 mt-1.5 flex items-center">
+              <i class="fas fa-circle-exclamation mr-1"></i> Please enter a valid Instagram username
+            </p>
+          </div>
+
+          <!-- Finding Profile / Continue Button -->
+          <button 
+            id="btn-step-1-find"
+            onclick="handleFindProfile()"
+            class="w-full hero-gradient-btn text-white py-3.5 px-6 rounded-2xl font-bold text-sm flex items-center justify-center space-x-2 relative overflow-hidden"
+          >
+            <span id="btn-text-1" class="flex items-center space-x-2">
+              <i class="fa-solid fa-magnifying-glass text-xs"></i>
+              <span>Finding profile...</span>
+            </span>
+            <span id="btn-spinner-1" class="hidden flex items-center space-x-2">
+              <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>Searching profile network...</span>
+            </span>
+          </button>
+        </div>
+
+        <!-- ==================================================== -->
+        <!-- STEP 2: Confirm Profile & Amount (Shown in Video 0:01) -->
+        <!-- ==================================================== -->
+        <div id="step-2" class="step-panel hidden transition-all duration-300">
+          <div class="mb-4">
+            <h2 class="text-base font-bold text-white leading-snug">
+              Step 2 — Confirm profile &amp; choose amount
+            </h2>
+          </div>
+
+          <!-- Profile Info Card -->
+          <div class="bg-inputBg/80 border border-cardBorder rounded-2xl p-4 mb-5">
+            <div class="flex items-center space-x-3 mb-4">
+              <!-- Avatar with fallback/dicebear -->
+              <div class="w-12 h-12 rounded-full border-2 border-purple-500/50 p-0.5 overflow-hidden bg-slate-800 flex-shrink-0 flex items-center justify-center">
+                <img id="profile-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=rabbit60135146" alt="Avatar" class="w-full h-full rounded-full object-cover" onerror="this.src='https://placehold.co/100x100/23203c/a855f7?text=IG'">
+              </div>
+              <div class="overflow-hidden">
+                <h3 id="display-username" class="font-bold text-white text-base truncate">@rabbit.60135146</h3>
+                <span class="inline-flex items-center text-[11px] text-emerald-400 font-medium">
+                  <i class="fas fa-shield-check text-emerald-400 mr-1"></i> Public Verified Account
+                </span>
+              </div>
+            </div>
+
+            <!-- Stats Bar (Posts / Followers / Following) -->
+            <div class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-cardBorder/60">
+              <div class="bg-cardBg/60 p-2 rounded-xl">
+                <div id="stat-posts" class="font-extrabold text-white text-base font-mono">0</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">POSTS</div>
+              </div>
+              <div class="bg-cardBg/60 p-2 rounded-xl">
+                <div id="stat-followers" class="font-extrabold text-white text-base font-mono">197</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">FOLLOWERS</div>
+              </div>
+              <div class="bg-cardBg/60 p-2 rounded-xl">
+                <div id="stat-following" class="font-extrabold text-white text-base font-mono">4</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">FOLLOWING</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- How many followers do you want? -->
+          <div class="mb-4">
+            <label class="block text-xs font-semibold text-slate-300 mb-2.5">
+              How many followers do you want?
+            </label>
+            <div class="grid grid-cols-2 gap-2.5" id="amount-grid">
+              <button onclick="selectFollowerAmount(500, this)" class="amount-btn py-3 px-4 rounded-xl border border-cardBorder bg-inputBg text-sm font-bold text-slate-200 hover:border-purple-400 transition flex items-center justify-center">
+                500
+              </button>
+              <button onclick="selectFollowerAmount(1000, this)" class="amount-btn selected-amount-btn py-3 px-4 rounded-xl border border-cardBorder bg-inputBg text-sm font-bold text-slate-200 hover:border-purple-400 transition flex items-center justify-center">
+                1,000
+              </button>
+              <button onclick="selectFollowerAmount(5000, this)" class="amount-btn py-3 px-4 rounded-xl border border-cardBorder bg-inputBg text-sm font-bold text-slate-200 hover:border-purple-400 transition flex items-center justify-center">
+                5,000
+              </button>
+              <button onclick="openCustomAmountModal()" class="amount-btn py-3 px-4 rounded-xl border border-cardBorder bg-inputBg text-sm font-bold text-slate-200 hover:border-purple-400 transition flex items-center justify-center space-x-1">
+                <span id="custom-amount-label">Custom</span>
+                <i class="fas fa-pen text-[10px] text-slate-400"></i>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">
+              Maximum 50,000 per request. Large orders are throttled for safety.
+            </p>
+          </div>
+
+          <!-- Buttons Row: Back & Next -->
+          <div class="flex items-center space-x-2 pt-2">
+            <button onclick="goToStep(1)" class="w-1/3 py-3 px-3 rounded-2xl border border-cardBorder bg-inputBg hover:bg-white/5 text-slate-300 text-xs font-semibold transition">
+              Back
+            </button>
+            <button onclick="startDeliveryProcess()" class="w-2/3 hero-gradient-btn text-white py-3.5 px-4 rounded-2xl font-bold text-xs flex items-center justify-center space-x-1.5 transition">
+              <span id="btn-next-text">Next — send 1,000 followers</span>
+              <i class="fas fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 3: Live Follower Counter -->
+        <!-- ============================================== -->
+        <div id="step-3" class="step-panel hidden transition-all duration-300">
+          <div class="mb-5 text-center">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>Delivering Followers Live</span>
+            </span>
+            <h2 class="text-xl font-bold text-white">
+              Sending to <span id="counter-target-user" class="text-pink-400">@rabbit.60135146</span>
+            </h2>
+          </div>
+
+          <!-- Digital Follower Counter Card -->
+          <div class="bg-inputBg/80 border border-cardBorder rounded-3xl p-6 text-center my-3 relative overflow-hidden shadow-2xl">
+            <!-- Ambient Card Glow -->
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-purple-500/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-pink-500/10 rounded-full blur-xl pointer-events-none"></div>
+
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-2">
+              Followers Added
+            </div>
+            
+            <div class="flex items-center justify-center space-x-2 my-3">
+              <span class="text-3xl md:text-4xl font-extrabold text-pink-400 font-mono">+</span>
+              <span id="live-follower-counter" class="text-5xl md:text-6xl font-black font-mono tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+                0
+              </span>
+            </div>
+
+            <div class="text-xs text-slate-400 font-mono mt-3">
+              Target: <span id="counter-target-amount" class="text-white font-bold">1,000</span> followers
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-cardBorder/60 flex items-center justify-center space-x-2 text-xs text-emerald-400 font-mono">
+              <i class="fa-solid fa-bolt animate-pulse"></i>
+              <span>Adding live followers to profile...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 4: Delivery Started Card (Video 0:20) -->
+        <!-- ============================================== -->
+        <div id="step-success" class="step-panel hidden transition-all duration-300">
+          <div class="text-center py-6">
+            <!-- Glowing Success Badge -->
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-4 animate-bounce">
+              <i class="fa-solid fa-check text-2xl text-white"></i>
+            </div>
+
+            <h2 class="text-xl font-extrabold text-white mb-6">
+              The Instagram followers are on their way
+            </h2>
+
+            <!-- Action button -->
+            <button onclick="resetFlow()" class="w-full py-3.5 px-4 rounded-2xl hero-gradient-btn text-white text-xs font-bold flex items-center justify-center space-x-2 transition">
+              <i class="fas fa-rotate-right text-xs"></i>
+              <span>Place another order</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Real-Time Orders Activity Feed -->
+      <div class="mt-5 bg-cardBg/90 border border-cardBorder rounded-3xl p-4 shadow-xl backdrop-blur-md">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-cardBorder/60">
+          <div class="flex items-center space-x-2">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-bold text-white tracking-wide">Live Orders Feed</span>
+          </div>
+          <span class="text-[10px] text-emerald-400 font-mono flex items-center">
+            <i class="fa-solid fa-bolt mr-1"></i> Live Stream
+          </span>
+        </div>
+        <div id="ticker-feed" class="space-y-2.5">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Simulated Mobile Browser Footer / Socialvero Domain -->
+      <footer class="text-center pt-8 pb-4">
+        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-cardBg border border-cardBorder text-[11px] text-slate-400">
+          <i class="fas fa-lock text-[10px] text-emerald-400"></i>
+          <span class="font-mono">socialrivero.com</span>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-2">
+          © 2026 Socialvero Inc. All rights reserved. Not affiliated with Instagram or Meta Inc.
+        </p>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- Custom Amount Modal -->
+  <div id="custom-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-cardBorder rounded-3xl p-6 w-full max-w-xs shadow-2xl">
+      <h3 class="text-base font-bold text-white mb-2">Choose custom amount</h3>
+      <p class="text-xs text-slate-400 mb-4">Enter a quantity between 100 and 50,000 followers:</p>
+      
+      <input 
+        id="custom-amount-input" 
+        type="number" 
+        min="100" 
+        max="50000" 
+        step="100" 
+        value="2500"
+        class="w-full px-4 py-3 bg-inputBg border border-cardBorder rounded-xl text-white text-base font-mono mb-4 focus:outline-none focus:border-purple-500"
+      />
+
+      <div class="flex space-x-2">
+        <button onclick="closeCustomAmountModal()" class="w-1/2 py-2.5 rounded-xl border border-cardBorder text-slate-300 text-xs font-semibold hover:bg-white/5 transition">
+          Cancel
+        </button>
+        <button onclick="applyCustomAmount()" class="w-1/2 hero-gradient-btn text-white py-2.5 rounded-xl text-xs font-bold transition">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl bg-cardBg border border-purple-500/50 text-white text-xs shadow-2xl flex items-center space-x-2 opacity-0 pointer-events-none transition-all duration-300 z-50">
+    <i id="toast-icon" class="fas fa-check-circle text-emerald-400"></i>
+    <span id="toast-msg">Copied to clipboard!</span>
+  </div>
+
+  <!-- Interactive JavaScript logic matching the exact video phases -->
+  <script>
+    // State
+    const state = {
+      username: 'rabbit.60135146',
+      amount: 1000,
+      soundEnabled: true,
+      currentStep: 1,
+      progressInterval: null,
+      progress: 0,
+      isDeviceView: false
+    };
+
+    // Synthesized Sound Effects via Web Audio API (Zero external dependencies)
+    let audioCtx = null;
+    function playBeep(freq = 440, type = 'sine', duration = 0.08) {
+      if (!state.soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // Audio error handle
+      }
+    }
+
+    function playSuccessChime() {
+      if (!state.soundEnabled) return;
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        setTimeout(() => playBeep(freq, 'triangle', 0.25), i * 90);
+      });
+    }
+
+    // Initialize UI on load
+    window.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      startLiveTickerSimulation();
+    });
+
+    function setupEventListeners() {
+      // Toggle device preview
+      const toggleDeviceBtn = document.getElementById('toggle-device-view');
+      const appShell = document.getElementById('app-shell');
+      toggleDeviceBtn.addEventListener('click', () => {
+        state.isDeviceView = !state.isDeviceView;
+        if (state.isDeviceView) {
+          appShell.classList.add('device-mockup', 'my-6', 'rounded-[44px]', 'border-[6px]', 'border-[#26243d]', 'overflow-hidden');
+          showToast('Smartphone mockup mode enabled');
+        } else {
+          appShell.classList.remove('device-mockup', 'my-6', 'rounded-[44px]', 'border-[6px]', 'border-[#26243d]', 'overflow-hidden');
+          showToast('Standard mobile viewport enabled');
+        }
+      });
+
+      // Toggle Audio
+      const audioBtn = document.getElementById('toggle-audio-btn');
+      const audioIcon = document.getElementById('audio-icon');
+      audioBtn.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        if (state.soundEnabled) {
+          audioIcon.className = 'fas fa-volume-up';
+          showToast('Sound effects enabled');
+          playBeep(600, 'sine', 0.1);
+        } else {
+          audioIcon.className = 'fas fa-volume-mute text-rose-400';
+          showToast('Sound effects muted');
+        }
+      });
+
+      // Menu toggle
+      const menuBtn = document.getElementById('menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Close menu on click outside
+      document.addEventListener('click', (e) => {
+        if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    }
+
+    // Step 1: Finding Profile
+    function handleFindProfile() {
+      const input = document.getElementById('input-username');
+      const errorMsg = document.getElementById('username-error');
+      const rawUser = input.value.trim().replace(/^@/, '');
+
+      if (!rawUser || rawUser.length < 2) {
+        errorMsg.classList.remove('hidden');
+        input.focus();
+        return;
+      }
+      errorMsg.classList.add('hidden');
+      state.username = rawUser;
+
+      // Loading state
+      const btnText = document.getElementById('btn-text-1');
+      const btnSpinner = document.getElementById('btn-spinner-1');
+      btnText.classList.add('hidden');
+      btnSpinner.classList.remove('hidden');
+      playBeep(480, 'sine', 0.1);
+
+      // Simulate network profile resolution
+      setTimeout(() => {
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+
+        // Populate step 2 & 3 data
+        document.getElementById('display-username').textContent = '@' + state.username;
+        const counterTargetUser = document.getElementById('counter-target-user');
+        if (counterTargetUser) counterTargetUser.textContent = '@' + state.username;
+        const counterTargetAmt = document.getElementById('counter-target-amount');
+        if (counterTargetAmt) counterTargetAmt.textContent = formatNumber(state.amount);
+        
+        // Realistic avatar generation
+        const avatarUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(state.username)}`;
+        document.getElementById('profile-avatar').src = avatarUrl;
+
+        // Dynamic realistic stats like in video
+        if (state.username.toLowerCase().includes('rabbit')) {
+          document.getElementById('stat-posts').textContent = '0';
+          document.getElementById('stat-followers').textContent = '197';
+          document.getElementById('stat-following').textContent = '4';
+        } else {
+          document.getElementById('stat-posts').textContent = Math.floor(Math.random() * 45);
+          document.getElementById('stat-followers').textContent = formatNumber(Math.floor(Math.random() * 850 + 50));
+          document.getElementById('stat-following').textContent = Math.floor(Math.random() * 320 + 10);
+        }
+
+        updateNextButtonText();
+        goToStep(2);
+      }, 950);
+    }
+
+    // Select Amount
+    function selectFollowerAmount(amt, btnElement) {
+      playBeep(650, 'triangle', 0.08);
+      state.amount = amt;
+      
+      const buttons = document.querySelectorAll('.amount-btn');
+      buttons.forEach(b => b.classList.remove('selected-amount-btn'));
+      if (btnElement) {
+        btnElement.classList.add('selected-amount-btn');
+      }
+      updateNextButtonText();
+    }
+
+    function updateNextButtonText() {
+      document.getElementById('btn-next-text').textContent = `Next — send ${formatNumber(state.amount)} followers`;
+      const counterTargetAmt = document.getElementById('counter-target-amount');
+      if (counterTargetAmt) counterTargetAmt.textContent = formatNumber(state.amount);
+    }
+
+    // Custom Amount Modal handlers
+    function openCustomAmountModal() {
+      document.getElementById('custom-modal').classList.remove('hidden');
+    }
+
+    function closeCustomAmountModal() {
+      document.getElementById('custom-modal').classList.add('hidden');
+    }
+
+    function applyCustomAmount() {
+      const input = document.getElementById('custom-amount-input');
+      let val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 100) val = 100;
+      if (val > 50000) val = 50000;
+
+      state.amount = val;
+      document.getElementById('custom-amount-label').textContent = formatNumber(val);
+      
+      const buttons = document.querySelectorAll('.amount-btn');
+      buttons.forEach(b => b.classList.remove('selected-amount-btn'));
+      buttons[3].classList.add('selected-amount-btn');
+
+      updateNextButtonText();
+      closeCustomAmountModal();
+      playBeep(750, 'sine', 0.1);
+    }
+
+    // Step 3: Start Delivery Process (Live Counter Animation)
+    function startDeliveryProcess() {
+      goToStep(3);
+
+      const counterEl = document.getElementById('live-follower-counter');
+      const targetUserEl = document.getElementById('counter-target-user');
+      const targetAmountEl = document.getElementById('counter-target-amount');
+
+      if (targetUserEl) targetUserEl.textContent = '@' + state.username;
+      if (targetAmountEl) targetAmountEl.textContent = formatNumber(state.amount);
+
+      let current = 0;
+      const total = state.amount;
+      if (counterEl) counterEl.textContent = '0';
+
+      clearInterval(state.progressInterval);
+
+      const startTime = Date.now();
+      const duration = 4500; // 4.5 seconds for satisfying realistic counting pace
+
+      state.progressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(1, elapsed / duration);
+
+        // Smooth cubic ease-out so it starts quick and lands exactly on the target number
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        current = Math.floor(easeOut * total);
+        if (counterEl) counterEl.textContent = formatNumber(current);
+
+        // Audio clicks while followers are incrementing
+        if (Math.random() < 0.4) {
+          playBeep(420 + Math.random() * 260, 'sine', 0.03);
+        }
+
+        if (progress >= 1) {
+          clearInterval(state.progressInterval);
+          if (counterEl) counterEl.textContent = formatNumber(total);
+          playSuccessChime();
+
+          setTimeout(() => {
+            showSuccessScreen();
+          }, 700);
+        }
+      }, 35);
+    }
+
+    // Step 4: Show Success Screen
+    function showSuccessScreen() {
+      goToStep(4);
+      showToast('Order successfully activated in queue!');
+    }
+
+    // Step Switcher Helper
+    function goToStep(stepNumber) {
+      state.currentStep = stepNumber;
+      
+      const s1 = document.getElementById('step-1');
+      const s2 = document.getElementById('step-2');
+      const s3 = document.getElementById('step-3');
+      const sSuccess = document.getElementById('step-success');
+
+      [s1, s2, s3, sSuccess].forEach(el => el.classList.add('hidden'));
+
+      if (stepNumber === 1) s1.classList.remove('hidden');
+      else if (stepNumber === 2) s2.classList.remove('hidden');
+      else if (stepNumber === 3) s3.classList.remove('hidden');
+      else if (stepNumber === 4) sSuccess.classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetFlow() {
+      clearInterval(state.progressInterval);
+      state.progress = 0;
+      goToStep(1);
+    }
+
+    function shareLink() {
+      const shareText = `Get Instagram followers on Socialvero: https://socialrivero.com`;
+      copyTextToClipboard(shareText);
+      showToast('Link copied to clipboard!');
+      playBeep(600, 'sine', 0.1);
+    }
+
+    // Safe clipboard copy function
+    function copyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+      } catch (err) {
+        // Fallback
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.textContent = message;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2600);
+    }
+
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Live Feed Simulation in Footer
+    function startLiveTickerSimulation() {
+      const names = [
+        'alex.martini', 'sarah_smith', 'daniel.k', 'emily_travels', 
+        'marco_vlog', 'sophia_design', 'lucas_fitness', 'olivia.m99',
+        'noah_beats', 'chloe.style', 'vlad.creator', 'elena_art'
+      ];
+      const amounts = [500, 1000, 2500, 5000, 10000];
+      const feed = document.getElementById('ticker-feed');
+      if (!feed) return;
+
+      // Initial feed state
+      const initialItems = [
+        { name: 'alex.martini', amount: 1000, time: 'Just now' },
+        { name: 'sarah_smith', amount: 500, time: '4s ago' },
+        { name: 'emily_travels', amount: 2500, time: '12s ago' }
+      ];
+
+      feed.innerHTML = initialItems.map(item => `
+        <div class="flex items-center justify-between text-xs py-2 px-3 bg-inputBg/60 rounded-xl border border-cardBorder/50">
+          <div class="flex items-center space-x-2 overflow-hidden">
+            <div class="w-6 h-6 rounded-full bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-[10px] text-purple-300 font-bold shrink-0">
+              ${item.name[0].toUpperCase()}
+            </div>
+            <span class="text-slate-200 font-medium truncate">@${item.name}</span>
+          </div>
+          <div class="flex items-center space-x-2 shrink-0">
+            <span class="font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">+${formatNumber(item.amount)}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${item.time}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Add real-time items dynamically
+      setInterval(() => {
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const randomAmount = amounts[Math.floor(Math.random() * amounts.length)];
+        
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between text-xs py-2 px-3 bg-inputBg/60 rounded-xl border border-cardBorder/50 transition-all duration-500 opacity-0 -translate-y-2';
+        row.innerHTML = `
+          <div class="flex items-center space-x-2 overflow-hidden">
+            <div class="w-6 h-6 rounded-full bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-[10px] text-purple-300 font-bold shrink-0">
+              ${randomName[0].toUpperCase()}
+            </div>
+            <span class="text-slate-200 font-medium truncate">@${randomName}</span>
+          </div>
+          <div class="flex items-center space-x-2 shrink-0">
+            <span class="font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">+${formatNumber(randomAmount)}</span>
+            <span class="text-[10px] text-emerald-400 font-mono">Just now</span>
+          </div>
+        `;
+        
+        feed.prepend(row);
+        setTimeout(() => {
+          row.classList.remove('opacity-0', '-translate-y-2');
+        }, 30);
+
+        if (feed.children.length > 4) {
+          feed.removeChild(feed.lastChild);
+        }
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
